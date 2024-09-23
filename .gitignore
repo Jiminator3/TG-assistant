@@ -1,0 +1,9 @@
+### dotenv template
+.env
+venv
+/.idea/.gitignore
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/inspectionProfiles/profiles_settings.xml
+/.idea/TG-assistant.iml
+/.idea/vcs.xml
