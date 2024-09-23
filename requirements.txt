@@ -4,3 +4,4 @@ APScheduler~=3.10.4
 python-decouple~=3.8
 Faker~=29.0.0
 psutil~=6.0.0
+PyAutoGUI~=0.9.54
