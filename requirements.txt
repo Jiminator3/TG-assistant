@@ -5,3 +5,5 @@ python-decouple~=3.8
 Faker~=29.0.0
 psutil~=6.0.0
 PyAutoGUI~=0.9.54
+SQLAlchemy~=2.0.35
+asyncpg_lite~=0.3.1.3

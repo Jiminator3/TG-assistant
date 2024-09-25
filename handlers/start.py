@@ -1,12 +1,15 @@
-from subprocess import Popen
+from typing import Any
 
 from aiogram import Router, F
 from aiogram.filters import CommandStart, Command, CommandObject
 from aiogram.types import Message
+from sqlalchemy import Integer, String, TIMESTAMP
 
+from db_handler import db_service
 from filters.is_admin import IsAdmin
 from keyboards.all_kb import main_kb, create_spec_kb, create_rat
 from keyboards.inline_kbs import ease_link_kb, get_inline_kb, create_qst_inline_kb
+from utils import get_db_options, get_db_types
 from utils.user_generator import get_random_person
 from aiogram.types import CallbackQuery
 import asyncio
@@ -89,3 +92,38 @@ async def cmd_start(call: CallbackQuery):
     async with ChatActionSender(bot=bot, chat_id=call.from_user.id, action="typing"):
         await asyncio.sleep(2)
         await call.message.answer(msg_text, reply_markup=create_qst_inline_kb(questions))
+
+
+@start_router.message(Command("create_table"))
+async def create_table(message: Message, command: CommandObject):
+    try:
+        command_split = command.args.split(":")[0].split(",")
+        first_options = get_db_options(command_split[1:])
+        command_split[2] = get_db_types(command_split[2])
+        columns = [{'name': command_split[1], 'type': command_split[2]}]
+        if first_options is not None:
+            columns[0].update(first_options)
+
+        other_records = command.args.split(":")[1:]
+        for record in other_records:
+            record_list: list = record.split(",")
+            options = get_db_options(record_list)
+
+            record_list[1] = get_db_types(record_list[1])
+
+            if options is not None:
+                columns.append({'name': record_list[0], 'type': record_list[1] | options})
+            else:
+                columns.append({'name': record_list[0], 'type': record_list[1]})
+        await db_service.create_table(command_split[0], columns)
+        await message.answer("Таблица создалась!")
+    except Exception as e:
+        await message.answer(f'Таблица не создалась: {e}')
+
+
+@start_router.message(Command("create_table_help"))
+async def create_table_help(message: Message):
+    message_text = f"Чтобы создать таблицу нужно ввести сообщение /create_table \n\n" \
+                   f"C аргументами - Имя таблицы,Название колонки,Тип колонки,Доп опции:следующая строка\n\n" \
+                   f"Возможные типы - Integer, String, TIMESTAMP"
+    await message.answer(message_text)
